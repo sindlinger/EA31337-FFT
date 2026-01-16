@@ -74,4 +74,5 @@ enum ENUM_STRATEGY {
   STRAT_STOCHASTIC,              // Stochastic
   STRAT_WPR,                     // WPR
   STRAT_ZIGZAG,                  // ZigZag
+  STRAT_FFT_PHASECLOCK_COLORWAVE,  // FFT PhaseClock ColorWave
 };
