@@ -72,7 +72,8 @@ enum ENUM_STRATEGY {
   STRAT_SAR,                     // SAR
   STRAT_STDDEV,                  // StdDev
   STRAT_STOCHASTIC,              // Stochastic
-  STRAT_WPR,                     // WPR
-  STRAT_ZIGZAG,                  // ZigZag
-  STRAT_FFT_PHASECLOCK_COLORWAVE,  // FFT PhaseClock ColorWave
+  STRAT_WPR,                          // WPR
+  STRAT_ZIGZAG,                       // ZigZag
+  STRAT_FFT_PHASECLOCK_COLORWAVE,     // FFT PhaseClock ColorWave
+  STRAT_FFT_PHASECLOCK_COLORWAVE_SIGNAL,  // FFT PhaseClock ColorWave (signal-only)
 };

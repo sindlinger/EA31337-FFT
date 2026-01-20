@@ -81,30 +81,6 @@ class EALibre : public EA {
     }
   }
 
-  virtual bool TradeRequest(ENUM_ORDER_TYPE _cmd, string _symbol = NULL, Strategy *_strat = NULL) {
-#ifdef __MQL5__
-    if (_strat != NULL && _strat.GetName() == "FFT_PhaseClock_ColorWave") {
-      Stg_FFT_PhaseClock_ColorWave *stg = (Stg_FFT_PhaseClock_ColorWave *)_strat;
-      return stg.ExecuteTradeSignal(_cmd);
-    }
-#endif
-    return EA::TradeRequest(_cmd, _symbol, _strat);
-  }
-
-  virtual EAProcessResult ProcessTick() {
-    EAProcessResult result = EA::ProcessTick();
-#ifdef __MQL5__
-    for (DictStructIterator<long, Ref<Strategy>> iter = strats.Begin(); iter.IsValid(); ++iter) {
-      Strategy *strat = iter.Value().Ptr();
-      if (strat.GetName() == "FFT_PhaseClock_ColorWave") {
-        Stg_FFT_PhaseClock_ColorWave *stg = (Stg_FFT_PhaseClock_ColorWave *)strat;
-        stg.ManagePositions();
-      }
-    }
-#endif
-    return result;
-  }
-
   /**
    * Print startup info.
    */
@@ -249,6 +225,8 @@ class EALibre : public EA {
         return StrategyAdd<Stg_ZigZag>(_tfs, _magic_no, _stg);
       case STRAT_FFT_PHASECLOCK_COLORWAVE:
         return StrategyAdd<Stg_FFT_PhaseClock_ColorWave>(_tfs, _magic_no, _stg);
+      case STRAT_FFT_PHASECLOCK_COLORWAVE_SIGNAL:
+        return StrategyAdd<Stg_FFT_PhaseClock_ColorWave_Signal>(_tfs, _magic_no, _stg);
       case STRAT_NONE:
         break;
       default:

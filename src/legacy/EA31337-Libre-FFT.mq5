@@ -19,10 +19,25 @@
 
 // Inputs.
 input int Active_Tfs = (H1B | M30B);        // Timeframes (M1=1,M2=2,M5=16,M15=256,M30=1024,H1=2048,...)
-input ENUM_LOG_LEVEL Log_Level = V_INFO;   // Log level.
+input ENUM_LOG_LEVEL Log_Level = V_DEBUG;   // Log level.
 input bool Info_On_Chart = true;           // Display info on chart.
 
-// Defines.
+// Defines (override defaults from include/define.h if present).
+#ifdef ea_name
+#undef ea_name
+#endif
+#ifdef ea_version
+#undef ea_version
+#endif
+#ifdef ea_desc
+#undef ea_desc
+#endif
+#ifdef ea_link
+#undef ea_link
+#endif
+#ifdef ea_author
+#undef ea_author
+#endif
 #define ea_name "EA31337 Libre - FFT PhaseClock ColorWave"
 #define ea_version "1.000"
 #define ea_desc "Minimal EA31337 build with FFT PhaseClock ColorWave strategy only."
@@ -38,47 +53,15 @@ input bool Info_On_Chart = true;           // Display info on chart.
 #property link ea_link
 #property copyright "Copyright 2016-2023, EA31337 Ltd"
 
-#ifdef __MQL5__
-class EA_FFT_PhaseClock : public EA {
- public:
-  EA_FFT_PhaseClock(EAParams &_params) : EA(_params) {}
-
-  virtual bool TradeRequest(ENUM_ORDER_TYPE _cmd, string _symbol = NULL, Strategy *_strat = NULL) {
-    if (_strat == NULL) {
-      return EA::TradeRequest(_cmd, _symbol, _strat);
-    }
-    if (_strat.GetName() == "FFT_PhaseClock_ColorWave") {
-      Stg_FFT_PhaseClock_ColorWave *stg = (Stg_FFT_PhaseClock_ColorWave *)_strat;
-      return stg.ExecuteTradeSignal(_cmd);
-    }
-    return EA::TradeRequest(_cmd, _symbol, _strat);
-  }
-
-  virtual EAProcessResult ProcessTick() {
-    EAProcessResult result = EA::ProcessTick();
-    for (DictStructIterator<long, Ref<Strategy>> iter = strats.Begin(); iter.IsValid(); ++iter) {
-      Strategy *strat = iter.Value().Ptr();
-      if (strat.GetName() == "FFT_PhaseClock_ColorWave") {
-        Stg_FFT_PhaseClock_ColorWave *stg = (Stg_FFT_PhaseClock_ColorWave *)strat;
-        stg.ManagePositions();
-      }
-    }
-    return result;
-  }
-};
-#else
-typedef EA EA_FFT_PhaseClock;
-#endif
-
 // Class variables.
-EA_FFT_PhaseClock *ea;
+EA *ea;
 
 /* EA event handler functions */
 
 int OnInit() {
   bool _result = true;
   EAParams ea_params(__FILE__, Log_Level);
-  ea = new EA_FFT_PhaseClock(ea_params);
+  ea = new EA(ea_params);
   _result &= ea.StrategyAdd<Stg_FFT_PhaseClock_ColorWave>(Active_Tfs);
   return (_result ? INIT_SUCCEEDED : INIT_FAILED);
 }
