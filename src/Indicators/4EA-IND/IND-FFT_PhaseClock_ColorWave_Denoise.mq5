@@ -72,6 +72,9 @@ input double denoise_sigma = 1.0;           // PSD threshold multiplier
 input int    denoise_future_bars = 0;       // Use future bars (lookahead)
 input bool   denoise_color_from_value = true; // Recolor from denoised value
 
+// Base indicator path (the original FFT indicator)
+input string base_indicator_path = "IND-EA31337\\IND-FFT_PhaseClock_CLOSE_SINFLIP_LEAD_v1.5_ColorWave";
+
 // ---- DLL import ----
 #import "fft_denoise.dll"
 int CausalFFT(const double &close[], int n, double sigma,
@@ -82,7 +85,7 @@ int CausalFFT(const double &close[], int n, double sigma,
 
 // ---- Internal state ----
 int handle_src = INVALID_HANDLE;
-string base_path = "4EA-IND\\IND-FFT_PhaseClock_CLOSE_SINFLIP_LEAD_v1.5_ColorWave";
+string base_path = "";
 
 double buf_val[];
 double buf_col[];
@@ -154,6 +157,10 @@ int CreateSrcHandle(string path) {
 
 int EnsureSrcHandle() {
   if (handle_src != INVALID_HANDLE) return handle_src;
+  base_path = base_indicator_path;
+  if (base_path == "") {
+    base_path = "IND-EA31337\\IND-FFT_PhaseClock_CLOSE_SINFLIP_LEAD_v1.5_ColorWave";
+  }
   handle_src = CreateSrcHandle(base_path);
   if (handle_src != INVALID_HANDLE) return handle_src;
 
@@ -169,6 +176,10 @@ int EnsureSrcHandle() {
   }
   if (alt_path_4ea != base_path && alt_path_4ea != alt_path) {
     handle_src = CreateSrcHandle(alt_path_4ea);
+    if (handle_src != INVALID_HANDLE) return handle_src;
+  }
+  if (base_path != "4EA-IND\\IND-FFT_PhaseClock_CLOSE_SINFLIP_LEAD_v1.5_ColorWave") {
+    handle_src = CreateSrcHandle("4EA-IND\\IND-FFT_PhaseClock_CLOSE_SINFLIP_LEAD_v1.5_ColorWave");
     if (handle_src != INVALID_HANDLE) return handle_src;
   }
   return INVALID_HANDLE;
