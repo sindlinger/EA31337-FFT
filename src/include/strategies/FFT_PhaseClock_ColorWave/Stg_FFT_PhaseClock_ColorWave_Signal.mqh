@@ -113,6 +113,13 @@ INPUT FFT_FORECAST_MODE FFT_Signal_Ind_ForecastMode = FFT_FC_MIRROR;
 INPUT int FFT_Signal_Ind_ForecastRegBars = 32;
 INPUT int FFT_Signal_Ind_ForecastBars = 0;
 
+INPUT_GROUP("FFT PhaseClock Signal: denoise (DLL)");
+INPUT bool FFT_Signal_Ind_DenoiseEnable = true;
+INPUT int FFT_Signal_Ind_DenoiseWindowBars = 128;
+INPUT double FFT_Signal_Ind_DenoiseSigma = 1.0;
+INPUT int FFT_Signal_Ind_DenoiseFutureBars = 0;
+INPUT bool FFT_Signal_Ind_DenoiseColorFromValue = true;
+
 // Struct with default strategy values.
 struct Stg_FFT_PhaseClock_ColorWave_Signal_Params_Defaults : StgParams {
   Stg_FFT_PhaseClock_ColorWave_Signal_Params_Defaults()
@@ -233,6 +240,11 @@ class Stg_FFT_PhaseClock_ColorWave_Signal : public Strategy {
     p.forecast_mode = FFT_Signal_Ind_ForecastMode;
     p.forecast_reg_bars = FFT_Signal_Ind_ForecastRegBars;
     p.forecast_bars = FFT_Signal_Ind_ForecastBars;
+    p.denoise_enable = FFT_Signal_Ind_DenoiseEnable;
+    p.denoise_window_bars = FFT_Signal_Ind_DenoiseWindowBars;
+    p.denoise_sigma = FFT_Signal_Ind_DenoiseSigma;
+    p.denoise_future_bars = FFT_Signal_Ind_DenoiseFutureBars;
+    p.denoise_color_from_value = FFT_Signal_Ind_DenoiseColorFromValue;
     return p;
   }
 

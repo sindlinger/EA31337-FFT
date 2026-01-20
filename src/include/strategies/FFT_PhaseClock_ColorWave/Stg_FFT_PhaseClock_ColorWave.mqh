@@ -78,6 +78,13 @@ INPUT FFT_FORECAST_MODE FFT_Ind_ForecastMode = FFT_FC_MIRROR;
 INPUT int FFT_Ind_ForecastRegBars = 32;
 INPUT int FFT_Ind_ForecastBars = 0;
 
+INPUT_GROUP("FFT PhaseClock: denoise (DLL)");
+INPUT bool FFT_Ind_DenoiseEnable = true;
+INPUT int FFT_Ind_DenoiseWindowBars = 128;
+INPUT double FFT_Ind_DenoiseSigma = 1.0;
+INPUT int FFT_Ind_DenoiseFutureBars = 0;
+INPUT bool FFT_Ind_DenoiseColorFromValue = true;
+
 // Reverse mode.
 enum ENUM_REVERSE_MODE {
   REVERSE_NETTING_STYLE = 0,
@@ -162,6 +169,11 @@ class Stg_FFT_PhaseClock_ColorWave : public Strategy {
     p.forecast_mode = FFT_Ind_ForecastMode;
     p.forecast_reg_bars = FFT_Ind_ForecastRegBars;
     p.forecast_bars = FFT_Ind_ForecastBars;
+    p.denoise_enable = FFT_Ind_DenoiseEnable;
+    p.denoise_window_bars = FFT_Ind_DenoiseWindowBars;
+    p.denoise_sigma = FFT_Ind_DenoiseSigma;
+    p.denoise_future_bars = FFT_Ind_DenoiseFutureBars;
+    p.denoise_color_from_value = FFT_Ind_DenoiseColorFromValue;
     return p;
   }
 

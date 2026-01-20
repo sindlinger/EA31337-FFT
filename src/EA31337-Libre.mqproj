@@ -23,6 +23,11 @@
       "relative_to_project": true
     },
     {
+      "path": "Indicators\4EA-IND\IND-FFT_PhaseClock_ColorWave_Denoise.mq5",
+      "compile": true,
+      "relative_to_project": true
+    },
+    {
       "path": "include\\includes.mqh",
       "compile": false,
       "relative_to_project": true

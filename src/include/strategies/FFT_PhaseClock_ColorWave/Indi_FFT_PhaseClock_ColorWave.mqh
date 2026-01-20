@@ -86,6 +86,11 @@ struct FFT_PhaseClock_Params {
   int clock_center_dot_size;
   color clock_center_color;
   bool clock_show_text;
+  bool denoise_enable;
+  int denoise_window_bars;
+  double denoise_sigma;
+  int denoise_future_bars;
+  bool denoise_color_from_value;
 
   FFT_PhaseClock_Params() {
     lag_preset = FFT_LAG_PRESET_CUSTOM;
@@ -143,6 +148,11 @@ struct FFT_PhaseClock_Params {
     clock_center_dot_size = 12;
     clock_center_color = clrWhite;
     clock_show_text = true;
+    denoise_enable = true;
+    denoise_window_bars = 128;
+    denoise_sigma = 1.0;
+    denoise_future_bars = 0;
+    denoise_color_from_value = true;
   }
 };
 
@@ -161,30 +171,15 @@ class Indi_FFT_PhaseClock_ColorWave {
   }
 
 #ifdef __MQL5__
-  bool CreateHandle() {
-    if (symbol == "" || path == "") {
-      LogError("Init required before use.");
-      return false;
-    }
-    handle = iCustom(symbol, tf, path);
-    if (handle != INVALID_HANDLE) {
-      return true;
-    }
-    ResetLastError();
-    string backup_path = path;
-    if (StringFind(path, "-backup") < 0) {
-      backup_path = path + "-backup";
-    }
-    if (backup_path != path) {
-      handle = iCustom(symbol, tf, backup_path);
-      if (handle != INVALID_HANDLE) {
-        path = backup_path;
-        LogError("Using backup indicator path.");
-        return true;
-      }
-      ResetLastError();
-    }
-    handle = iCustom(symbol, tf, path,
+  bool IsDenoiseIndicatorPath(const string &_path) {
+    string lower = _path;
+    StringToLower(lower);
+    return StringFind(lower, "denoise") >= 0;
+  }
+
+  int CreateHandleForPath(const string &_path) {
+    if (IsDenoiseIndicatorPath(_path)) {
+      return iCustom(symbol, tf, _path,
                      params.lag_preset,
                      params.feed_source,
                      params.atr_period,
@@ -239,7 +234,95 @@ class Indi_FFT_PhaseClock_ColorWave {
                      params.clock_show_center_dot,
                      params.clock_center_dot_size,
                      params.clock_center_color,
-                     params.clock_show_text);
+                     params.clock_show_text,
+                     params.denoise_enable,
+                     params.denoise_window_bars,
+                     params.denoise_sigma,
+                     params.denoise_future_bars,
+                     params.denoise_color_from_value);
+    }
+    return iCustom(symbol, tf, _path,
+                   params.lag_preset,
+                   params.feed_source,
+                   params.atr_period,
+                   params.feed_indicator_tf,
+                   params.feed_indicator_name,
+                   params.feed_indicator_buffer,
+                   params.fft_size,
+                   params.window_type,
+                   params.kaiser_beta,
+                   params.causal_window,
+                   params.remove_dc,
+                   params.pad_mode,
+                   params.one_value_per_bar,
+                   params.apply_bandpass,
+                   params.cycle_bars,
+                   params.bandwidth_pct,
+                   params.band_shape,
+                   params.output_mode,
+                   params.normalize_amp,
+                   params.phase_offset_deg,
+                   params.lead_bars,
+                   params.lead_use_cycle_omega,
+                   params.lead_omega_smooth,
+                   params.lead_min_cycle_bars,
+                   params.lead_max_cycle_bars,
+                   params.invert_output,
+                   params.zero_phase_rt,
+                   params.forecast_mode,
+                   params.forecast_reg_bars,
+                   params.forecast_bars,
+                   params.show_forecast_line,
+                   params.forecast_draw_bars,
+                   params.forecast_line_color,
+                   params.forecast_line_width,
+                   params.hold_phase_on_low_amp,
+                   params.low_amp_eps,
+                   params.show_phase_clock,
+                   params.clock_x_offset,
+                   params.clock_y_offset,
+                   params.clock_radius,
+                   params.clock_show_ring_dots,
+                   params.clock_ring_dots_count,
+                   params.clock_ring_dot_size,
+                   params.clock_ring_color,
+                   params.clock_show_numbers,
+                   params.clock_numbers_size,
+                   params.clock_numbers_color,
+                   params.clock_show_hand,
+                   params.clock_hand_segments,
+                   params.clock_hand_dot_size,
+                   params.clock_hand_color,
+                   params.clock_show_center_dot,
+                   params.clock_center_dot_size,
+                   params.clock_center_color,
+                   params.clock_show_text);
+  }
+
+  bool CreateHandle() {
+    if (symbol == "" || path == "") {
+      LogError("Init required before use.");
+      return false;
+    }
+    handle = iCustom(symbol, tf, path);
+    if (handle != INVALID_HANDLE) {
+      return true;
+    }
+    ResetLastError();
+    string backup_path = path;
+    if (StringFind(path, "-backup") < 0) {
+      backup_path = path + "-backup";
+    }
+    if (backup_path != path) {
+      handle = iCustom(symbol, tf, backup_path);
+      if (handle != INVALID_HANDLE) {
+        path = backup_path;
+        LogError("Using backup indicator path.");
+        return true;
+      }
+      ResetLastError();
+    }
+    handle = CreateHandleForPath(path);
     if (handle == INVALID_HANDLE) {
       int err = GetLastError();
       ResetLastError();
@@ -250,124 +333,14 @@ class Indi_FFT_PhaseClock_ColorWave {
         alt_path_4ea = "4EA-IND\\" + path;
       }
       if (alt_path != path) {
-        handle = iCustom(symbol, tf, alt_path,
-                         params.lag_preset,
-                         params.feed_source,
-                         params.atr_period,
-                         params.feed_indicator_tf,
-                         params.feed_indicator_name,
-                         params.feed_indicator_buffer,
-                         params.fft_size,
-                         params.window_type,
-                         params.kaiser_beta,
-                         params.causal_window,
-                         params.remove_dc,
-                         params.pad_mode,
-                         params.one_value_per_bar,
-                         params.apply_bandpass,
-                         params.cycle_bars,
-                         params.bandwidth_pct,
-                         params.band_shape,
-                         params.output_mode,
-                         params.normalize_amp,
-                         params.phase_offset_deg,
-                         params.lead_bars,
-                         params.lead_use_cycle_omega,
-                         params.lead_omega_smooth,
-                         params.lead_min_cycle_bars,
-                         params.lead_max_cycle_bars,
-                         params.invert_output,
-                         params.zero_phase_rt,
-                         params.forecast_mode,
-                         params.forecast_reg_bars,
-                         params.forecast_bars,
-                         params.show_forecast_line,
-                         params.forecast_draw_bars,
-                         params.forecast_line_color,
-                         params.forecast_line_width,
-                         params.hold_phase_on_low_amp,
-                         params.low_amp_eps,
-                         params.show_phase_clock,
-                         params.clock_x_offset,
-                         params.clock_y_offset,
-                         params.clock_radius,
-                         params.clock_show_ring_dots,
-                         params.clock_ring_dots_count,
-                         params.clock_ring_dot_size,
-                         params.clock_ring_color,
-                         params.clock_show_numbers,
-                         params.clock_numbers_size,
-                         params.clock_numbers_color,
-                         params.clock_show_hand,
-                         params.clock_hand_segments,
-                         params.clock_hand_dot_size,
-                         params.clock_hand_color,
-                         params.clock_show_center_dot,
-                         params.clock_center_dot_size,
-                         params.clock_center_color,
-                         params.clock_show_text);
+        handle = CreateHandleForPath(alt_path);
         if (handle != INVALID_HANDLE) {
           path = alt_path;
           return true;
         }
       }
       if (alt_path_4ea != path && alt_path_4ea != alt_path) {
-        handle = iCustom(symbol, tf, alt_path_4ea,
-                         params.lag_preset,
-                         params.feed_source,
-                         params.atr_period,
-                         params.feed_indicator_tf,
-                         params.feed_indicator_name,
-                         params.feed_indicator_buffer,
-                         params.fft_size,
-                         params.window_type,
-                         params.kaiser_beta,
-                         params.causal_window,
-                         params.remove_dc,
-                         params.pad_mode,
-                         params.one_value_per_bar,
-                         params.apply_bandpass,
-                         params.cycle_bars,
-                         params.bandwidth_pct,
-                         params.band_shape,
-                         params.output_mode,
-                         params.normalize_amp,
-                         params.phase_offset_deg,
-                         params.lead_bars,
-                         params.lead_use_cycle_omega,
-                         params.lead_omega_smooth,
-                         params.lead_min_cycle_bars,
-                         params.lead_max_cycle_bars,
-                         params.invert_output,
-                         params.zero_phase_rt,
-                         params.forecast_mode,
-                         params.forecast_reg_bars,
-                         params.forecast_bars,
-                         params.show_forecast_line,
-                         params.forecast_draw_bars,
-                         params.forecast_line_color,
-                         params.forecast_line_width,
-                         params.hold_phase_on_low_amp,
-                         params.low_amp_eps,
-                         params.show_phase_clock,
-                         params.clock_x_offset,
-                         params.clock_y_offset,
-                         params.clock_radius,
-                         params.clock_show_ring_dots,
-                         params.clock_ring_dots_count,
-                         params.clock_ring_dot_size,
-                         params.clock_ring_color,
-                         params.clock_show_numbers,
-                         params.clock_numbers_size,
-                         params.clock_numbers_color,
-                         params.clock_show_hand,
-                         params.clock_hand_segments,
-                         params.clock_hand_dot_size,
-                         params.clock_hand_color,
-                         params.clock_show_center_dot,
-                         params.clock_center_dot_size,
-                         params.clock_center_color,
-                         params.clock_show_text);
+        handle = CreateHandleForPath(alt_path_4ea);
         if (handle != INVALID_HANDLE) {
           path = alt_path_4ea;
           return true;
