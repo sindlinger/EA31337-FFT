@@ -97,72 +97,8 @@ double ffilt[];
 double closehat[];
 
 int CreateSrcHandle(string path) {
-  int h = iCustom(_Symbol, _Period, path,
-                  lag_preset,
-                  feed_source,
-                  atr_period,
-                  feed_indicator_tf,
-                  feed_indicator_name,
-                  feed_indicator_buffer,
-                  fft_size,
-                  window_type,
-                  kaiser_beta,
-                  causal_window,
-                  remove_dc,
-                  pad_mode,
-                  one_value_per_bar,
-                  apply_bandpass,
-                  cycle_bars,
-                  bandwidth_pct,
-                  band_shape,
-                  output_mode,
-                  normalize_amp,
-                  phase_offset_deg,
-                  lead_bars,
-                  lead_use_cycle_omega,
-                  lead_omega_smooth,
-                  lead_min_cycle_bars,
-                  lead_max_cycle_bars,
-                  invert_output,
-                  zero_phase_rt,
-                  forecast_mode,
-                  forecast_reg_bars,
-                  forecast_bars,
-                  show_forecast_line,
-                  forecast_draw_bars,
-                  forecast_line_color,
-                  forecast_line_width,
-                  hold_phase_on_low_amp,
-                  low_amp_eps,
-                  show_phase_clock,
-                  clock_x_offset,
-                  clock_y_offset,
-                  clock_radius,
-                  clock_show_ring_dots,
-                  clock_ring_dots_count,
-                  clock_ring_dot_size,
-                  clock_ring_color,
-                  clock_show_numbers,
-                  clock_numbers_size,
-                  clock_numbers_color,
-                  clock_show_hand,
-                  clock_hand_segments,
-                  clock_hand_dot_size,
-                  clock_hand_color,
-                  clock_show_center_dot,
-                  clock_center_dot_size,
-                  clock_center_color,
-                  clock_show_text);
-  if (h == INVALID_HANDLE) {
-    int err = GetLastError();
-    ResetLastError();
-    // Fallback: try default params (base indicator defaults).
-    h = iCustom(_Symbol, _Period, path);
-    if (h != INVALID_HANDLE) {
-      PrintFormat("[IND-FFT-Denoise] Fallback to default params for base indicator. err=%d path=%s", err, path);
-    }
-  }
-  return h;
+  // Always call base indicator with its internal defaults (no params).
+  return iCustom(_Symbol, _Period, path);
 }
 
 int EnsureSrcHandle() {
